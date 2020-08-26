@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	earthRaidusKm = 6371 // radius of the earth in kilometers.
+	earthRaidusM = 6371000 // radius of the earth in meters.
 )
 
 // Coord represents a geographic coordinate.
@@ -22,14 +22,14 @@ type Coord struct {
 // CheckPoint respresents an object with location
 type CheckPoint struct {
 	Name  string
-	coord *Coord
+	Coord *Coord
 }
 
 // Distance calculates the shortest path between two coordinates on the surface
 // of the Earth mesarued in meters.
-func (c *CheckPoint) Distance(p *Coord) float64 {
-	lat1 := degreesToRadians(c.coord.Lat)
-	lon1 := degreesToRadians(c.coord.Lon)
+func (c *Coord) Distance(p *Coord) float64 {
+	lat1 := degreesToRadians(c.Lat)
+	lon1 := degreesToRadians(c.Lon)
 	lat2 := degreesToRadians(p.Lat)
 	lon2 := degreesToRadians(p.Lon)
 
@@ -41,9 +41,9 @@ func (c *CheckPoint) Distance(p *Coord) float64 {
 
 	d := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
-	km := d * earthRaidusKm
+	m := d * earthRaidusM
 
-	return km * 1000
+	return m
 }
 
 // degreesToRadians converts from degrees to radians.
@@ -81,7 +81,7 @@ func NewCheckPointsFromFile(fileStr string) []*CheckPoint {
 			log.Println("error pasring checkpoints file with err:", err)
 			continue
 		}
-		checkpoints = append(checkpoints, &CheckPoint{Name: fields[0], coord: coord})
+		checkpoints = append(checkpoints, &CheckPoint{Name: fields[0], Coord: coord})
 	}
 
 	if err := scanner.Err(); err != nil {
