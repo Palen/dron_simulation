@@ -1,12 +1,8 @@
-package checkpoints
+package geo
 
 import (
-	"bufio"
-	"log"
 	"math"
-	"os"
 	"strconv"
-	"strings"
 )
 
 const (
@@ -17,12 +13,6 @@ const (
 type Coord struct {
 	Lat float64
 	Lon float64
-}
-
-// CheckPoint respresents an object with location
-type CheckPoint struct {
-	Name  string
-	Coord *Coord
 }
 
 // Distance calculates the shortest path between two coordinates on the surface
@@ -51,6 +41,7 @@ func degreesToRadians(d float64) float64 {
 	return d * math.Pi / 180
 }
 
+// creates new coord pointer from lat lon string
 func LatLonToCoords(lat, lon string) (*Coord, error) {
 	latitude, err := strconv.ParseFloat(lat, 32)
 	if err != nil {
@@ -62,30 +53,4 @@ func LatLonToCoords(lat, lon string) (*Coord, error) {
 	}
 	coord := Coord{Lat: latitude, Lon: longitude}
 	return &coord, nil
-}
-
-func NewCheckPointsFromFile(fileStr string) []*CheckPoint {
-	var checkpoints []*CheckPoint
-	file, err := os.Open(fileStr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		fields := strings.Split(line, ",")
-		coord, err := LatLonToCoords(fields[1], fields[2])
-		if err != nil {
-			log.Println("error pasring checkpoints file with err:", err)
-			continue
-		}
-		checkpoints = append(checkpoints, &CheckPoint{Name: fields[0], Coord: coord})
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	return checkpoints
 }

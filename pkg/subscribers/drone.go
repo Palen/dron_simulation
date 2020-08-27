@@ -7,17 +7,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Palen/drone_simulation/pkg/checkpoints"
+	"github.com/Palen/drone_simulation/pkg/geo"
 )
 
 var trafficChoices = [...]string{"HEAVY", "LIGHT", "MODERATE"}
 
 type Drone struct {
 	id          uint64
-	checkpoints []*checkpoints.CheckPoint
+	checkpoints []*geo.CheckPoint
 	channel     *MessageChannel
 	lastTime    *time.Time
-	lastCoord   *checkpoints.Coord
+	lastCoord   *geo.Coord
 	exit        chan *sync.WaitGroup
 }
 
@@ -30,7 +30,7 @@ func (d *Drone) Exit(waiter *sync.WaitGroup) {
 	d.exit <- waiter
 }
 
-func (d *Drone) Move(coords *checkpoints.Coord, t *time.Time) {
+func (d *Drone) Move(coords *geo.Coord, t *time.Time) {
 	speed := 0.0
 	if d.lastCoord == nil {
 		d.lastCoord = coords
@@ -64,7 +64,7 @@ func (d *Drone) Subscribe() {
 	}
 }
 
-func NewDrone(checkpts []*checkpoints.CheckPoint, maxSize int, id uint64) *Drone {
+func NewDrone(checkpts []*geo.CheckPoint, maxSize int, id uint64) *Drone {
 	channel := make(MessageChannel, maxSize)
 	quit := make(chan *sync.WaitGroup, 1)
 	drone := Drone{checkpoints: checkpts, channel: &channel, id: id, lastTime: nil, exit: quit}

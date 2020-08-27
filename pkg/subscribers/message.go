@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Palen/drone_simulation/pkg/checkpoints"
+	"github.com/Palen/drone_simulation/pkg/geo"
 )
 
 type MessageChannel chan *Message
@@ -14,7 +14,7 @@ type MessageChannel chan *Message
 type Message struct {
 	Id    uint64
 	Time  time.Time
-	Coord checkpoints.Coord
+	Coord geo.Coord
 }
 
 func NewMessage(line string) (*Message, error) {
@@ -29,7 +29,7 @@ func NewMessage(line string) (*Message, error) {
 		if err != nil {
 			return nil, errors.New("time format not valid")
 		}
-		coords, err := checkpoints.LatLonToCoords(strings.ReplaceAll(fields[1], `"`, ""),
+		coords, err := geo.LatLonToCoords(strings.ReplaceAll(fields[1], `"`, ""),
 			strings.ReplaceAll(fields[2], `"`, ""))
 		if err != nil {
 			return nil, errors.New("coordinates not valid")

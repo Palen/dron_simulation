@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Palen/drone_simulation/pkg/checkpoints"
 	"github.com/Palen/drone_simulation/pkg/dispatcher"
+	"github.com/Palen/drone_simulation/pkg/geo"
 	"github.com/Palen/drone_simulation/pkg/producers"
 	"github.com/Palen/drone_simulation/pkg/subscribers"
 )
@@ -25,7 +25,7 @@ func main() {
 	dispatcherChannel := make(dispatcher.DispatcherChan)
 
 	// Read checkpoints file
-	checkpts := checkpoints.NewCheckPointsFromFile(*checkpointsFilePtr)
+	checkpts := geo.NewCheckPointsFromFile(*checkpointsFilePtr)
 
 	// Read subscribers files dir
 	subscribersFiles, err := ioutil.ReadDir(*subscribersFileDirPtr)
