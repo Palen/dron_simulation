@@ -43,7 +43,7 @@ func (d *Drone) Move(coords *geo.Coord, t *time.Time) {
 		d.lastCoord = coords
 		for _, checkpoint := range d.checkpoints {
 			distance := checkpoint.Coord.Distance(coords)
-			if distance < d.perimeter {
+			if distance <= d.perimeter {
 				conditions := trafficChoices[rand.Intn(len(trafficChoices))]
 				log.Println(fmt.Sprintf("Traffic Report ID: %d | Time: %s | Speed: %.2fm/s | Traffic: %s",
 					d.id, t, d.speed, conditions))
