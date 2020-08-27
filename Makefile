@@ -29,7 +29,7 @@ tidy:	## Prune any no-longer-needed dependencies from go.mod and add any depende
 
 .PHONY: test
 test:	## Run unitary test
-	go test -p 1 -cover -v -race ./... -timeout 5m
+	go test -p 1 -cover -v ./... -timeout 5m
 
 .PHONY: build
 build:	## Build application

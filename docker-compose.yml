@@ -11,24 +11,6 @@ services:
     command: >
       sh -c "make run"
     environment:
-      - CONFIG_FTP_HOST=mocks
-      - CONFIG_FTP_USER=anonymous
-      - CONFIG_FTP_PASSWORD=anonymous
-      - CONFIG_FTP_TIMER=5
-      - CONFIG_DATABASE_HOST=db
-      - CONFIG_DATABASE_DBNAME=incomedb
-    depends_on:
-      - mocks
-      - db
-    restart: "always"
-
-  db:
-    image: "mongo"
-    environment:
-      - MONGO_INITDB_DATABASE=incomedb
-
-  mocks:
-    build:
-      context: ./mocks
-      dockerfile: Dockerfile
+      - SIMULATION_DRONE_SPEED=5
+      - SIMULATION_DRONE_PERIMETER=350
     restart: "always"

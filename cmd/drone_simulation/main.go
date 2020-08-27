@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -9,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Palen/drone_simulation/pkg/config"
 	"github.com/Palen/drone_simulation/pkg/dispatcher"
 	"github.com/Palen/drone_simulation/pkg/geo"
 	"github.com/Palen/drone_simulation/pkg/producers"
@@ -16,19 +16,20 @@ import (
 )
 
 func main() {
-	// Parse flags
-	subscribersFileDirPtr := flag.String("subscribersdir", "./data/subscribers/", "Subscribers files location")
-	checkpointsFilePtr := flag.String("checkpointsfile", "./data/tube.csv", "Checkpoints file")
-	flag.Parse()
+	// Parse config
+	conf, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
 
 	// Instanttine dispatcher
 	dispatcherChannel := make(dispatcher.DispatcherChan)
 
 	// Read checkpoints file
-	checkpts := geo.NewCheckPointsFromFile(*checkpointsFilePtr)
+	checkpts := geo.NewCheckPointsFromFile(conf.CheckPointFile)
 
 	// Read subscribers files dir
-	subscribersFiles, err := ioutil.ReadDir(*subscribersFileDirPtr)
+	subscribersFiles, err := ioutil.ReadDir(conf.SubscribersDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,9 +43,10 @@ func main() {
 		if err != nil {
 			log.Fatal("Invalid subscriber file name")
 		}
-		filePath := filepath.Join(*subscribersFileDirPtr, file.Name())
+		filePath := filepath.Join(conf.SubscribersDir, file.Name())
 		fileReader := producers.NewFileReader(filePath, &dispatcherChannel)
-		sub := subscribers.NewDrone(checkpts, 10, id)
+		sub := subscribers.NewDrone(checkpts, conf.Drone.MaxSize, id, conf.Drone.Speed,
+			conf.Drone.Perimeter)
 		subs[id] = sub
 		go sub.Subscribe()
 		go fileReader.Read()
