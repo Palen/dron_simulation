@@ -44,9 +44,9 @@ func main() {
 		}
 		filePath := filepath.Join(*subscribersFileDirPtr, file.Name())
 		fileReader := producers.NewFileReader(filePath, &dispatcherChannel)
-		drone := subscribers.NewDrone(checkpts, 10, id)
-		subs[id] = drone
-		go drone.Subscribe()
+		sub := subscribers.NewDrone(checkpts, 10, id)
+		subs[id] = sub
+		go sub.Subscribe()
 		go fileReader.Read()
 		waiter.Add(1)
 	}
