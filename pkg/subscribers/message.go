@@ -34,8 +34,8 @@ func NewMessage(line string) (*Message, error) {
 		if err != nil {
 			return nil, errors.New("coordinates not valid")
 		}
-		droneMessage := Message{Id: id, Coord: *coords, Time: t}
-		return &droneMessage, nil
+		message := Message{Id: id, Coord: *coords, Time: t}
+		return &message, nil
 	} else {
 		return nil, errors.New("line format not valid")
 	}
