@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/Palen/drone_simulation/pkg/checkpoints"
 	"github.com/Palen/drone_simulation/pkg/dispatcher"
@@ -31,8 +32,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	// Create subscribers slice
 	subs := make(subscribers.Subscribers)
+	// len(waiter) = len(subscribers)
+	var waiter sync.WaitGroup
 	for _, file := range subscribersFiles {
 		idStr := strings.Split(file.Name(), ".csv")[0]
 		id, err := strconv.ParseUint(idStr, 10, 64)
@@ -45,8 +48,11 @@ func main() {
 		subs[id] = drone
 		go drone.Subscribe()
 		go fileReader.Read()
+		waiter.Add(1)
 	}
+	// Start dispatching
 	dispatcher := dispatcher.New(&dispatcherChannel)
-	dispatcher.Start(subs)
+	go dispatcher.Start(subs, &waiter)
+	waiter.Wait()
 
 }

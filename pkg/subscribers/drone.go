@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/Palen/drone_simulation/pkg/checkpoints"
@@ -17,6 +18,16 @@ type Drone struct {
 	channel     *MessageChannel
 	lastTime    *time.Time
 	lastCoord   *checkpoints.Coord
+	exit        chan *sync.WaitGroup
+}
+
+func (d *Drone) Send(message *Message) {
+	*d.channel <- message
+
+}
+
+func (d *Drone) Exit(waiter *sync.WaitGroup) {
+	d.exit <- waiter
 }
 
 func (d *Drone) Move(coords *checkpoints.Coord, t *time.Time) {
@@ -28,7 +39,8 @@ func (d *Drone) Move(coords *checkpoints.Coord, t *time.Time) {
 		distanceFromLastPointM := d.lastCoord.Distance(coords)
 		timeElapsed := float64(t.Unix()) - float64(d.lastTime.Unix())
 		speed = distanceFromLastPointM / timeElapsed
-		time.Sleep(time.Duration(timeElapsed) * time.Second)
+		log.Println(timeElapsed, distanceFromLastPointM, speed)
+		time.Sleep(time.Duration(timeElapsed/10000) * time.Second)
 	}
 	for _, checkpoint := range d.checkpoints {
 		distance := checkpoint.Coord.Distance(coords)
@@ -40,26 +52,21 @@ func (d *Drone) Move(coords *checkpoints.Coord, t *time.Time) {
 	}
 }
 
-func (d *Drone) Send(message *Message) {
-	*d.channel <- message
-
-}
-
 func (d *Drone) Subscribe() {
 	for {
 		select {
 		case droneMessage := <-*d.channel:
-			if h, m, _ := droneMessage.Time.Clock(); h >= 8 && m >= 10 {
-				log.Println("Time is now: ", droneMessage.Time.String())
-				return
-			}
 			d.Move(&droneMessage.Coord, &droneMessage.Time)
+		case waiter := <-d.exit:
+			waiter.Done()
+			return
 		}
 	}
 }
 
 func NewDrone(checkpts []*checkpoints.CheckPoint, maxSize int, id uint64) *Drone {
 	channel := make(MessageChannel, maxSize)
-	drone := Drone{checkpoints: checkpts, channel: &channel, id: id, lastTime: nil}
+	quit := make(chan *sync.WaitGroup, 1)
+	drone := Drone{checkpoints: checkpts, channel: &channel, id: id, lastTime: nil, exit: quit}
 	return &drone
 }
