@@ -46,11 +46,11 @@ func degreesToRadians(d float64) float64 {
 func LatLonToCoords(lat, lon string) (*Coord, error) {
 	latitude, err := strconv.ParseFloat(lat, 32)
 	if err != nil {
-		return nil, fmt.Errorf("latitude fails: %s", err.Error())
+		return nil, fmt.Errorf("latitude fails: %s", err)
 	}
 	longitude, err := strconv.ParseFloat(lat, 32)
 	if err != nil {
-		return nil, fmt.Errorf("longitude fails: %s", err.Error())
+		return nil, fmt.Errorf("longitude fails: %s", err)
 	}
 	coord := Coord{Lat: latitude, Lon: longitude}
 	return &coord, nil
