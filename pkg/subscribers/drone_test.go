@@ -44,16 +44,16 @@ func (s *DroneSuite) AfterTest(suiteName, testName string) {
 	log.SetOutput(os.Stderr)
 }
 
-func newMessage(coord geo.Coord) Message {
+func newMessage(coord *geo.Coord) Message {
 	return Message{Id: uint64(99), Time: time.Now(), Coord: coord}
 }
 
 func (s *DroneSuite) Test_All_Drone() {
 	// route will be barcelona-terrassa-madrid
-	messageBarna := newMessage(barnaCoord)
+	messageBarna := newMessage(&barnaCoord)
 	var terCoord = geo.Coord{Lat: 41.385063, Lon: 2.173404}
-	messageTer := newMessage(terCoord)
-	messageMad := newMessage(madCoord)
+	messageTer := newMessage(&terCoord)
+	messageMad := newMessage(&madCoord)
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 	s.d.Send(&messageBarna)
@@ -62,8 +62,8 @@ func (s *DroneSuite) Test_All_Drone() {
 	time.Sleep(1 * time.Second)
 	logs := strings.Split(buf.String(), "\n")
 	reports := 0
-	for _, log := range logs {
-		if strings.Contains(log, "Traffic Report") {
+	for _, l := range logs {
+		if strings.Contains(l, "Traffic Report") {
 			reports++
 		}
 	}

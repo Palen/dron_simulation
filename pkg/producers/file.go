@@ -10,7 +10,7 @@ import (
 
 type FileReader struct {
 	fileStr        string
-	dispatcherChan *dispatcher.DispatcherChan
+	dispatcherChan dispatcher.DispatcherChan
 }
 
 func (r *FileReader) Read() {
@@ -18,11 +18,16 @@ func (r *FileReader) Read() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
+	defer func(file *os.File, fileStr string) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("Error closing %s with err: %s", fileStr, err)
+		}
+	}(file, r.fileStr)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		*r.dispatcherChan <- scanner.Text()
+		r.dispatcherChan <- scanner.Text()
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -30,7 +35,7 @@ func (r *FileReader) Read() {
 	}
 }
 
-func NewFileReader(fileStr string, channel *dispatcher.DispatcherChan) *FileReader {
+func NewFileReader(fileStr string, channel dispatcher.DispatcherChan) *FileReader {
 	fileReader := FileReader{fileStr: fileStr, dispatcherChan: channel}
 	return &fileReader
 

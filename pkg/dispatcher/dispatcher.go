@@ -10,14 +10,14 @@ import (
 type DispatcherChan chan string
 
 type Dispatcher struct {
-	channel *DispatcherChan
+	channel DispatcherChan
 }
 
 func (d *Dispatcher) Start(subs subscribers.Subscribers, waiter *sync.WaitGroup) {
 
 	for {
 		select {
-		case line := <-*d.channel:
+		case line := <-d.channel:
 			droneMessage, err := subscribers.NewMessage(line)
 			if err != nil {
 				log.Println("Invalid message with err:", err)
@@ -27,6 +27,10 @@ func (d *Dispatcher) Start(subs subscribers.Subscribers, waiter *sync.WaitGroup)
 				if subscriber, ok := subs[droneMessage.Id]; ok {
 					subscriber.Exit(waiter)
 					delete(subs, droneMessage.Id)
+					if len(subs) == 0 {
+						// No subscribers, no necessary no send tasks
+						return
+					}
 				}
 			}
 			if subscriber, ok := subs[droneMessage.Id]; ok {
@@ -36,7 +40,7 @@ func (d *Dispatcher) Start(subs subscribers.Subscribers, waiter *sync.WaitGroup)
 	}
 }
 
-func New(dispatcherChan *DispatcherChan) *Dispatcher {
-	dispatcher := Dispatcher{dispatcherChan}
-	return &dispatcher
+func New(dispatcherChan DispatcherChan) *Dispatcher {
+	disp := Dispatcher{dispatcherChan}
+	return &disp
 }

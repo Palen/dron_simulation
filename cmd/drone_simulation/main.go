@@ -3,10 +3,12 @@ package main
 import (
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Palen/drone_simulation/pkg/config"
 	"github.com/Palen/drone_simulation/pkg/dispatcher"
@@ -21,7 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	rand.Seed(time.Now().UTC().UnixNano())
 	// Instanttine dispatcher
 	dispatcherChannel := make(dispatcher.DispatcherChan)
 
@@ -44,7 +46,7 @@ func main() {
 			log.Fatal("Invalid subscriber file name")
 		}
 		filePath := filepath.Join(conf.SubscribersDir, file.Name())
-		fileReader := producers.NewFileReader(filePath, &dispatcherChannel)
+		fileReader := producers.NewFileReader(filePath, dispatcherChannel)
 		sub := subscribers.NewDrone(checkpts, conf.Drone.MaxSize, id, conf.Drone.Speed,
 			conf.Drone.Perimeter)
 		subs[id] = sub
@@ -53,7 +55,7 @@ func main() {
 		waiter.Add(1)
 	}
 	// Start dispatching
-	dispatcher := dispatcher.New(&dispatcherChannel)
+	dispatcher := dispatcher.New(dispatcherChannel)
 	go dispatcher.Start(subs, &waiter)
 	waiter.Wait()
 

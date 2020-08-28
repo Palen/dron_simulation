@@ -31,6 +31,19 @@ func (d *Drone) Exit(waiter *sync.WaitGroup) {
 	d.exit <- waiter
 }
 
+func (d *Drone) Subscribe() {
+	for {
+		select {
+		case droneMessage := <-*d.channel:
+			d.Move(droneMessage.Coord, &droneMessage.Time)
+		case waiter := <-d.exit:
+			waiter.Done()
+			log.Println(fmt.Sprintf("Shutdown drone id: %d", d.id))
+			return
+		}
+	}
+}
+
 func (d *Drone) Move(coords *geo.Coord, t *time.Time) {
 	if d.lastCoord == nil {
 		d.lastCoord = coords
@@ -51,19 +64,6 @@ func (d *Drone) Move(coords *geo.Coord, t *time.Time) {
 		}
 	}
 
-}
-
-func (d *Drone) Subscribe() {
-	for {
-		select {
-		case droneMessage := <-*d.channel:
-			d.Move(&droneMessage.Coord, &droneMessage.Time)
-		case waiter := <-d.exit:
-			waiter.Done()
-			log.Println(fmt.Sprintf("Shutdown drone id: %d", d.id))
-			return
-		}
-	}
 }
 
 func NewDrone(checkpts []*geo.CheckPoint, maxSize int, id uint64, speed float64, perimeter float64) *Drone {

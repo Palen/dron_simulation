@@ -19,7 +19,12 @@ func NewCheckPointsFromFile(fileStr string) []*CheckPoint {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
+	defer func(file *os.File, fileStr string) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("Error while closing file %s with err: %s", fileStr, err)
+		}
+	}(file, fileStr)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -27,14 +32,14 @@ func NewCheckPointsFromFile(fileStr string) []*CheckPoint {
 		fields := strings.Split(line, ",")
 		coord, err := LatLonToCoords(fields[1], fields[2])
 		if err != nil {
-			log.Println("error pasring checkpoints file with err:", err)
+			log.Printf("Error pasring checkpoints file in line: %s with err: %s", line, err)
 			continue
 		}
 		checkpoints = append(checkpoints, &CheckPoint{Name: fields[0], Coord: coord})
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		log.Printf("Error closing scanner for file: %s with err: %s", fileStr, err)
 	}
 	return checkpoints
 }
